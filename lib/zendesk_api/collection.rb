@@ -442,7 +442,12 @@ module ZendeskAPI
     def next_collection(name, *args, &block)
       opts = args.last.is_a?(Hash) ? args.last : {}
       opts.merge!(:collection_path => @collection_path.dup.push(name))
-      self.class.new(@client, @resource_class, @options.merge(opts))
+      associated_resource = @resource_class.associations.select{ |x| x[:name] == name }.first
+      if associated_resource
+        self.class.new(@client, associated_resource[:class], @options.merge(opts))
+      else
+        self.class.new(@client, @resource_class, @options.merge(opts))
+      end
     end
 
     def collection_method(name, *args, &block)
